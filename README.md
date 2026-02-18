@@ -2,7 +2,7 @@
 
 # 🤖 Astro Bot
 
-[![Discord.js](https://img.shields.io/badge/Discord.js-v14.14.1-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.js.org/)
+[![Discord.js](https://img.shields.io/badge/Discord.js-v14.25.1-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.js.org/)
 [![Node.js](https://img.shields.io/badge/Node.js->=18.0.0-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
@@ -64,8 +64,8 @@
 
 ### Step 1: Clone Repository
 ```bash
-git clone https://github.com/TuZhi-Codes/astro-bot.git
-cd astro-bot
+git clone https://github.com/tuzhicodes/Astro-Bot.git
+cd Astro-Bot
 ```
 
 Step 2: Install Dependencies
@@ -245,7 +245,7 @@ Code Style
 Need help? Join our support server or create an issue:
 
 - [Discord Support Server](https://discord.gg/your-invite)
-- [GitHub Issues](https://github.com/TuZhi-Codes/astro-bot/issues)
+- [GitHub Issues](https://github.com/tuzhicodes/Astro-Bot/issues)
 
 ---
 
@@ -295,17 +295,4 @@ NODE_ENV=development
 STATUS_TYPE=Watching
 STATUS_TEXT={prefix}help | {commands} commands
 STATUS_STATE=online
-```
-
-`.gitignore`:
-
-```
-node_modules/
-.env
-data/
-logs/
-*.log
-.DS_Store
-.vscode/
-.idea/
 ```
