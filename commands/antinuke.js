@@ -379,4 +379,28 @@ module.exports = {
 
     async unquarantine(interaction, client, config) {
         const check = await this.checkPerms(interaction, config);
-        if (!check.allowed) return interaction.repl
+        if (!check.allowed) return interaction.reply({ embeds: [new EmbedBuilder().setColor(getColor(config, 'error')).setDescription(check.error)], ephemeral: true });
+
+        const target = interaction.options.getMember('user');
+        if (!target) return interaction.reply({ embeds: [new EmbedBuilder().setColor(getColor(config, 'error')).setDescription('User not found')], ephemeral: true });
+
+        const quarantineData = await fs.readJson(path.join(check.dataPath, 'quarantine.json')).catch(() => ({}));
+        const data = quarantineData[target.id];
+
+        if (!data) return interaction.reply({ embeds: [new EmbedBuilder().setColor(getColor(config, 'warn')).setDescription('User not quarantined')], ephemeral: true });
+
+        // Remove quarantine and restore
+        await target.roles.remove(check.settings.quarantineRole).catch(() => {});
+        for (const roleId of data.roles) await target.roles.add(roleId).catch(() => {});
+
+        delete quarantineData[target.id];
+        await fs.writeJson(path.join(check.dataPath, 'quarantine.json'), quarantineData, { spaces: 2 });
+
+        const embed = new EmbedBuilder()
+            .setColor(getColor(config, 'success'))
+            .setTitle('✅ Restored')
+            .setDescription(`**User:** ${target.user.tag}\n**Roles:** ${data.roles.length} restored`);
+
+        await interaction.reply({ embeds: [embed] });
+    }
+};
