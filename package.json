@@ -1,1 +1,26 @@
-{\n  \"name\": \"astro-bot\",\n  \"version\": \"1.0.0\",\n  \"main\": \"index.js\",\n  \"dependencies\": {\n    \"discord.js\": \"14.25.1\"\n  },\n  \"devDependencies\": {\n    \"eslint\": \"^8.16.0\",\n    \"prettier\": \"^2.7.1\",\n    \"@types/node\": \"^18.0.0\"\n  },\n  \"scripts\": {\n    \"test\": \"echo \\\"Error: no test specified\\\" && exit 1\"\n  },\n  \"author\": \"Your Name\",\n  \"license\": \"ISC\"\n}
+{
+  "name": "astro-bot",
+  "version": "1.0.0",
+  "description": "A Discord bot powered by Astro",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.js\""
+  },
+  "dependencies": {
+    "discord.js": "^14.25.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.16.0",
+    "prettier": "^2.7.1",
+    "@types/node": "^18.0.0"
+  },
+  "author": "tuzhicodes",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
