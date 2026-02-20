@@ -115,15 +115,15 @@ function ts(date) {
 }
 
 function getStatusLabel(status) {
-  return { online: '🟢 Online', idle: '🌙 Idle', dnd: '🔴 Do Not Disturb', offline: '⚫ Offline' }[status] ?? '⚫ Unknown';
+  return { online: 'Online', idle: 'Idle', dnd: 'Do Not Disturb', offline: 'Offline' }[status] ?? '⚫ Unknown';
 }
 
 function getPlatformLabel(cs) {
   if (!cs) return null;
   const p = [];
-  if (cs.desktop) p.push('🖥️ Desktop');
-  if (cs.mobile)  p.push('📱 Mobile');
-  if (cs.web)     p.push('🌐 Web');
+  if (cs.desktop) p.push('Desktop');
+  if (cs.mobile)  p.push('Mobile');
+  if (cs.web)     p.push('Web');
   return p.length ? p.join(', ') : null;
 }
 
@@ -155,7 +155,7 @@ function buildUserInfoContainer(config, user, member) {
     `${EMOJIS.cat_general} **General**`,
     `> **User ID:** \`${user.id}\``,
     `> **Username:** ${user.tag ?? user.username}`,
-    isBot ? `> ${EMOJIS.bot} **Type:** Bot` : null,
+    isBot ? `> **Type:** Bot` : null,
   ].filter(Boolean).join('\n');
 
   container.addSectionComponents(section =>
@@ -175,8 +175,7 @@ function buildUserInfoContainer(config, user, member) {
   } else {
     badgeLines.push(`> - None`);
   }
-  badgeLines.push(`>`);
-  badgeLines.push(`> ${EMOJIS.created} **Account Created:** ${ts(user.createdAt)}`);
+  badgeLines.push(`> **Account Created:** ${ts(user.createdAt)}`);
 
   container
     .addSeparatorComponents(s => s.setDivider(false).setSpacing(SeparatorSpacingSize.Small))
@@ -185,18 +184,18 @@ function buildUserInfoContainer(config, user, member) {
   // ── Server Member ──
   if (member) {
     const memberLines = [`${EMOJIS.cat_member} **Server Member**`];
-    memberLines.push(`> ${EMOJIS.joined} **Joined Server:** ${ts(member.joinedAt)}`);
+    memberLines.push(`> **Joined Server:** ${ts(member.joinedAt)}`);
     if (member.nickname)
-      memberLines.push(`> ${EMOJIS.nickname} **Nickname:** ${member.nickname}`);
+      memberLines.push(`> **Nickname:** ${member.nickname}`);
     if (isOwner)
-      memberLines.push(`> ${EMOJIS.owner} **Server Owner:** Yes`);
+      memberLines.push(`> **Server Owner:** Yes`);
     if (member.premiumSince)
-      memberLines.push(`> ${EMOJIS.boost} **Boosting Since:** ${ts(member.premiumSince)}`);
+      memberLines.push(`> **Boosting Since:** ${ts(member.premiumSince)}`);
     if (member.communicationDisabledUntil && member.communicationDisabledUntil > new Date())
-      memberLines.push(`> ${EMOJIS.timeout} **Timed Out Until:** ${ts(member.communicationDisabledUntil)}`);
+      memberLines.push(`> **Timed Out Until:** ${ts(member.communicationDisabledUntil)}`);
     if (member.displayColor) {
       const hex = `#${member.displayColor.toString(16).padStart(6, '0').toUpperCase()}`;
-      memberLines.push(`> ${EMOJIS.color} **Role Color:** \`${hex}\``);
+      memberLines.push(`> **Role Color:** \`${hex}\``);
     }
 
     container
@@ -208,12 +207,12 @@ function buildUserInfoContainer(config, user, member) {
   if (member?.presence) {
     const p = member.presence;
     const presLines = [`${EMOJIS.cat_presence} **Presence**`];
-    presLines.push(`> ${EMOJIS.status} **Status:** ${getStatusLabel(p.status)}`);
+    presLines.push(`> **Status:** ${getStatusLabel(p.status)}`);
     const plat = getPlatformLabel(p.clientStatus);
-    if (plat) presLines.push(`> ${EMOJIS.platform} **Platform:** ${plat}`);
-    const actLabels = ['🎮 Playing', '📡 Streaming', '🎧 Listening to', '📺 Watching', '🔘 Custom Status', '🏆 Competing in'];
+    if (plat) presLines.push(`> **Platform:** ${plat}`);
+    const actLabels = ['Playing', 'Streaming', 'Listening to', 'Watching', 'Custom Status', 'Competing in'];
     for (const act of p.activities ?? []) {
-      presLines.push(`> ${EMOJIS.activity} **${actLabels[act.type] ?? 'Activity'}:** ${act.name}`);
+      presLines.push(`> **${actLabels[act.type] ?? 'Activity'}:** ${act.name}`);
     }
 
     container
@@ -226,12 +225,12 @@ function buildUserInfoContainer(config, user, member) {
     const vc = member.voice;
     const vcLines = [`${EMOJIS.cat_voice} **Voice**`];
     vcLines.push(`> ${EMOJIS.channel} **Channel:** <#${vc.channelId}>`);
-    if (vc.selfMute)   vcLines.push(`> ${EMOJIS.muted}     **Self Muted:** Yes`);
-    if (vc.selfDeaf)   vcLines.push(`> ${EMOJIS.deafened}  **Self Deafened:** Yes`);
-    if (vc.serverMute) vcLines.push(`> ${EMOJIS.muted}     **Server Muted:** Yes`);
-    if (vc.serverDeaf) vcLines.push(`> ${EMOJIS.deafened}  **Server Deafened:** Yes`);
-    if (vc.streaming)  vcLines.push(`> ${EMOJIS.streaming} **Streaming:** Yes`);
-    if (vc.selfVideo)  vcLines.push(`> ${EMOJIS.camera}    **Camera On:** Yes`);
+    if (vc.selfMute)   vcLines.push(`>  **Self Muted:** Yes`);
+    if (vc.selfDeaf)   vcLines.push(`>  **Self Deafened:** Yes`);
+    if (vc.serverMute) vcLines.push(`>  **Server Muted:** Yes`);
+    if (vc.serverDeaf) vcLines.push(`>  **Server Deafened:** Yes`);
+    if (vc.streaming)  vcLines.push(`>  **Streaming:** Yes`);
+    if (vc.selfVideo)  vcLines.push(`>  **Camera On:** Yes`);
 
     container
       .addSeparatorComponents(s => s.setDivider(false).setSpacing(SeparatorSpacingSize.Small))
