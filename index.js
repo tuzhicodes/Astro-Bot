@@ -1,5 +1,5 @@
 // ==========================================
-// ADVANCED DISCORD BOT - MAIN INDEX.JS
+// ASTRO BOT - ADVANCED DISCORD BOT
 // ==========================================
 
 const {
@@ -12,12 +12,24 @@ const {
     PermissionFlagsBits,
     EmbedBuilder
 } = require('discord.js');
-const fs   = require('fs-extra');
+const fs = require('fs-extra');
 const path = require('path');
 const crypto = require('crypto');
 require('dotenv').config();
 
-// ── Client ─────────────────────────────────────────────────────────────────
+// ── Colors from .env ─────────────────────────────────────────────────────
+const COLORS = {
+    success: process.env.COLOR_SUCCESS || '#b4b4b4',
+    warn: process.env.COLOR_WARN || '#FFD700',
+    error: process.env.COLOR_ERROR || '#FF0000',
+    cooldown: process.env.COLOR_COOLDOWN || '#808080',
+    info: process.env.COLOR_INFO || '#0099FF'
+};
+
+// Helper to get color int
+const getColor = (type) => parseInt(COLORS[type]?.replace('#', '') || 'b4b4b4', 16);
+
+// ── Client Configuration ───────────────────────────────────────────────────
 
 const client = new Client({
     intents: [
@@ -34,61 +46,57 @@ const client = new Client({
     allowedMentions: { parse: ['users', 'roles'], repliedUser: true },
 });
 
-client.commands      = new Collection();
+// Collections
+client.commands = new Collection();
 client.prefixCommands = new Collection();
-client.aliases       = new Collection();
-client.cooldowns     = new Collection();
+client.aliases = new Collection();
+client.cooldowns = new Collection();
 
+// Config with direct colors
 client.config = {
     globalPrefix: process.env.DEFAULT_PREFIX || '!',
-    colors: {
-        success:  process.env.COLOR_SUCCESS  || '#00FF00',
-        warn:     process.env.COLOR_WARN     || '#FFD700',
-        error:    process.env.COLOR_ERROR    || '#FF0000',
-        cooldown: process.env.COLOR_COOLDOWN || '#808080',
-        info:     process.env.COLOR_INFO     || '#0099FF',
-    },
+    colors: COLORS, // Direct from .env
     developers: process.env.DEVELOPER_IDS?.split(',').map(s => s.trim()).filter(Boolean) || [],
-    testGuild:  process.env.TEST_GUILD_ID?.trim() || null,
+    testGuild: process.env.TEST_GUILD_ID?.trim() || null,
     production: process.env.NODE_ENV === 'production',
 };
 
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
-// ── Logger ─────────────────────────────────────────────────────────────────
+// ── Logger ────────────────────────────────────────────────────────────────
 
 const C = {
-    reset:   '\x1b[0m',
-    red:     '\x1b[31m',
-    green:   '\x1b[32m',
-    yellow:  '\x1b[33m',
-    blue:    '\x1b[34m',
-    cyan:    '\x1b[36m',
+    reset: '\x1b[0m',
+    red: '\x1b[31m',
+    green: '\x1b[32m',
+    yellow: '\x1b[33m',
+    blue: '\x1b[34m',
+    cyan: '\x1b[36m',
 };
 
 const logger = {
-    ts:      () => new Date().toLocaleTimeString('en-US', { hour12: false }),
-    log:     (msg, c = 'reset') => console.log(`${C.cyan}[${logger.ts()}]${C.reset} ${C[c]}${msg}${C.reset}`),
-    info:    (msg) => logger.log(`ℹ️  ${msg}`, 'blue'),
+    ts: () => new Date().toLocaleTimeString('en-US', { hour12: false }),
+    log: (msg, c = 'reset') => console.log(`${C.cyan}[${logger.ts()}]${C.reset} ${C[c]}${msg}${C.reset}`),
+    info: (msg) => logger.log(`ℹ️  ${msg}`, 'blue'),
     success: (msg) => logger.log(`✅ ${msg}`, 'green'),
-    warn:    (msg) => logger.log(`⚠️  ${msg}`, 'yellow'),
-    error:   (msg) => logger.log(`❌ ${msg}`, 'red'),
-    cmd:     (name, type) => {
+    warn: (msg) => logger.log(`⚠️  ${msg}`, 'yellow'),
+    error: (msg) => logger.log(`❌ ${msg}`, 'red'),
+    cmd: (name, type) => {
         const icons = { slash: '🔷', prefix: '🔶', hybrid: '💎' };
         logger.log(`${icons[type] || '•'} ${type.toUpperCase().padEnd(6)} | ${name}`, 'green');
     },
-    evt:     (name, file) => logger.log(`📡 ${name.padEnd(20)} | ${file}`, 'cyan'),
+    evt: (name, file) => logger.log(`📡 ${name.padEnd(20)} | ${file}`, 'cyan'),
     divider: () => console.log(`${C.cyan}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C.reset}`),
 };
 
-// ── Hasher ─────────────────────────────────────────────────────────────────
+// ── Hasher ────────────────────────────────────────────────────────────────
 
 const hasher = {
     hashFile: './data/.command_hashes.json',
     async load() {
         try {
             if (await fs.pathExists(this.hashFile)) return await fs.readJson(this.hashFile);
-        } catch { /* ignore */ }
+        } catch { }
         return {};
     },
     async save(hashes) {
@@ -102,7 +110,7 @@ const hasher = {
     generate: (content) => crypto.createHash('md5').update(content).digest('hex'),
 };
 
-// ── Rate limiter ───────────────────────────────────────────────────────────
+// ── Rate Limiter ───────────────────────────────────────────────────────────
 
 const rateLimiter = {
     users: new Map(),
@@ -119,7 +127,7 @@ const rateLimiter = {
     },
 };
 
-// ── File scanner ───────────────────────────────────────────────────────────
+// ── File Scanner ───────────────────────────────────────────────────────────
 
 async function scanDirectory(dir, ext = '.js') {
     const files = [];
@@ -134,7 +142,7 @@ async function scanDirectory(dir, ext = '.js') {
     return files;
 }
 
-// ── Load commands ──────────────────────────────────────────────────────────
+// ── Load Commands ──────────────────────────────────────────────────────────
 
 async function loadCommands() {
     logger.info('Loading commands...');
@@ -143,9 +151,9 @@ async function loadCommands() {
     const dir = path.join(__dirname, 'commands');
     if (!await fs.pathExists(dir)) { logger.warn('Commands directory not found!'); return; }
 
-    const files        = await scanDirectory(dir);
-    const slashCmds    = [];
-    const cmdHashes    = new Map();
+    const files = await scanDirectory(dir);
+    const slashCmds = [];
+    const cmdHashes = new Map();
     let hybrid = 0, slash = 0, prefix = 0;
 
     for (const filePath of files) {
@@ -156,7 +164,7 @@ async function loadCommands() {
             if (!cmd.execute || typeof cmd.execute !== 'function') continue;
 
             const isHybrid = cmd.data?.name && cmd.name;
-            const isSlash  = !isHybrid && cmd.data?.name;
+            const isSlash = !isHybrid && cmd.data?.name;
             const isPrefix = !isHybrid && !isSlash && cmd.name;
 
             if (isHybrid) {
@@ -195,7 +203,6 @@ async function loadCommands() {
 
     logger.divider();
 
-    // Register slash commands
     if (slashCmds.length > 0) {
         try {
             const oldHashes = await hasher.load();
@@ -230,7 +237,7 @@ async function loadCommands() {
     logger.success(`Loaded: ${hybrid} hybrid, ${slash} slash, ${prefix} prefix`);
 }
 
-// ── Load events ────────────────────────────────────────────────────────────
+// ── Load Events ────────────────────────────────────────────────────────────
 
 async function loadEvents() {
     logger.info('Loading events...');
@@ -247,7 +254,6 @@ async function loadEvents() {
             delete require.cache[require.resolve(filePath)];
             const exported = require(filePath);
 
-            // Handle both single event and array of events
             const events = Array.isArray(exported) ? exported : [exported];
 
             for (const evt of events) {
@@ -270,7 +276,7 @@ async function loadEvents() {
     logger.success(`Loaded ${count} events`);
 }
 
-// ── Prefix handler ─────────────────────────────────────────────────────────
+// ── Prefix Handler ─────────────────────────────────────────────────────────
 
 client.on('messageCreate', async (message) => {
     if (message.author.bot || message.webhookId || !message.guild) return;
@@ -278,12 +284,12 @@ client.on('messageCreate', async (message) => {
     const prefix = client.config.globalPrefix;
     if (!message.content.startsWith(prefix)) return;
 
-    const args    = message.content.slice(prefix.length).trim().split(/ +/);
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
     const cmdName = args.shift()?.toLowerCase();
     if (!cmdName) return;
 
     const actualName = client.aliases.get(cmdName) || cmdName;
-    const command    = client.prefixCommands.get(actualName);
+    const command = client.prefixCommands.get(actualName);
     if (!command) return;
 
     if (command.devOnly && !client.config.developers.includes(message.author.id)) {
@@ -317,7 +323,7 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-// ── Slash handler ────────────────────────────────────────────────────────────
+// ── Slash Handler ─────────────────────────────────────────────────────────
 
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
@@ -349,18 +355,18 @@ client.on('interactionCreate', async (interaction) => {
     }
 });
 
-// ── Error handling ─────────────────────────────────────────────────────────
+// ── Error Handling ─────────────────────────────────────────────────────────
 
 client.on('error', err => logger.error(`Client: ${err.message}`));
 process.on('unhandledRejection', err => logger.error(`Unhandled: ${err?.message || err}`));
-process.on('uncaughtException',  err => { logger.error(`Fatal: ${err.message}`); process.exit(1); });
+process.on('uncaughtException', err => { logger.error(`Fatal: ${err.message}`); process.exit(1); });
 
 // ── Start ──────────────────────────────────────────────────────────────────
 
 (async function start() {
     try {
         logger.divider();
-        logger.info('Starting Bot...');
+        logger.info('Starting Astro Bot...');
         logger.divider();
 
         await loadEvents();
@@ -372,4 +378,4 @@ process.on('uncaughtException',  err => { logger.error(`Fatal: ${err.message}`);
         process.exit(1);
     }
 })();
-  
+                
